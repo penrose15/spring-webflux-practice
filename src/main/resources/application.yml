@@ -1,0 +1,16 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  # H2 ?????? ??
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+
+jwt:
+  secretKey: d5502bc0f808705f2b03a6953a2373d8f2bc132f4606fd97901f04fac62d0d35014ff2251755e1fe8222e42f9ee175a33d78227511c80fb58b301d476aa430c6
+  access:
+    expiration: 3600000 # 1hour
+    header: Authorization
