@@ -5,14 +5,16 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.performance.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.Date;
 import java.util.List;
@@ -32,28 +34,36 @@ public class JwtTokenProvider {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String EMAIL_CLAIM = "email";
+    private static final String BEARER = "Bearer ";
 
 
 
 
-    public String createAccessToken(String email, String role) {
-        Date now = new Date();
-
-        return JWT.create()
+    public Mono<String> createAccessToken(String email, String role) {
+        return Mono.just(JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
-                .withExpiresAt(new Date(now.getTime() + expiration))
+                .withExpiresAt(new Date(new Date().getTime() + expiration))
                 .withClaim(EMAIL_CLAIM, email)
                 .withClaim("role", role)
-                .sign(Algorithm.HMAC512(secretKey));
+                .sign(Algorithm.HMAC512(secretKey)))
+                .map(jwt -> BEARER + jwt);
     }
 
     public Authentication getAuthentication(String token) {
+        log.info("JwtTokenProvider.getAuthentication({})", token);
+
         DecodedJWT jwt = JWT.decode(token);
         String role = jwt.getClaim("role").asString();
         String email = jwt.getClaim("email").asString();
 
-        CustomUserDetails userDetails = new CustomUserDetails(email, role, "");
-        return new UsernamePasswordAuthenticationToken(userDetails, "", List.of(new SimpleGrantedAuthority(role)));
+        log.info("email = {}", email);
+        UserDetails user = User.builder()
+                .username(email)
+                .password("")
+                .roles(role)
+                .build();
+
+        return new UsernamePasswordAuthenticationToken(user, "", List.of(new SimpleGrantedAuthority(role)));
     }
 
     public boolean validateToken(String token) {

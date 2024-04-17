@@ -8,10 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,5 +31,13 @@ public class MemberController {
     public Mono<ResponseEntity<?>> save(@RequestBody MemberRequestDto request) {
         return memberService.saveMember(request)
                 .map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/test/{second}")
+    public Mono<String> getLatency(@PathVariable int second) {
+        return Mono.fromSupplier(() -> second)
+                .delayElement(Duration.ofSeconds(second))
+                .doOnNext(sec -> log.info("sec = {}", sec))
+                .map(sec -> "success");
     }
 }

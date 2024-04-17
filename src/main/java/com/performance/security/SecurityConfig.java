@@ -4,9 +4,11 @@ import com.performance.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +18,7 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 
 @Configuration
 @RequiredArgsConstructor
+@EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
     private final CustomUserDetailService userDetailService;
@@ -28,14 +31,18 @@ public class SecurityConfig {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) //stateless
                 .authenticationManager(reactiveAuthenticationManager())
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                        .pathMatchers("/h2/**").permitAll()
                         .pathMatchers("/login").permitAll()
+                        .pathMatchers("/member").permitAll()
+                        .pathMatchers("/test/**").permitAll()
                         .anyExchange().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, SecurityWebFiltersOrder.HTTP_BASIC)
                 .build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 

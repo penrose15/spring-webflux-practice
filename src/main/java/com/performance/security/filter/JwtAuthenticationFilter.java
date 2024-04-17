@@ -26,6 +26,11 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        log.info("start JwtAuthenticationFilter.filter()");
+//        if(exchange.getRequest().getURI().getPath().equals("/member")) {
+//            return chain.filter(exchange);
+//        }
+
         String token = getTokenFromHeader(exchange.getRequest());
         if(jwtTokenProvider.validateToken(token)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);

@@ -4,11 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
+@Table("members")
 public class Members {
 
     @Id
@@ -20,6 +23,7 @@ public class Members {
 
     private String password;
 
+    @Column(value = "roles")
     private String role;
 
     private LocalDateTime created;
